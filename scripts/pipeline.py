@@ -3,7 +3,12 @@ from pathlib import Path
 import argparse,contextlib,hashlib,importlib.util,json,math,os,shutil,subprocess,sys,time
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='1.0.0'
+VERSION='1.1.0'
+
+def renderer():
+ spec=importlib.util.spec_from_file_location('asy_card_renderer',ROOT/'scripts/card_renderer.py')
+ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+ return module
 
 def read(p): return json.loads(Path(p).read_text(encoding='utf-8-sig'))
 def save(p,d):
@@ -156,17 +161,12 @@ def compose(p,bg,out,c,still=None):
 
 def preview(p,c):
  src,d=build(p,c)
- from playwright.sync_api import sync_playwright
- spec=importlib.util.spec_from_file_location('card_xilo_renderer',ROOT/'vendor/xilo-render.py');vendor=importlib.util.module_from_spec(spec);spec.loader.exec_module(vendor)
- with sync_playwright() as w:
-  b=vendor.launch(w);pg=b.new_page(viewport={'width':1080,'height':1440})
-  pg.goto((p/'index.html').as_uri());pg.wait_for_function('window.ready');pg.evaluate('document.fonts.ready')
+ with renderer().card_page(p) as pg:
   times=sorted(set(round(s['start']+(s['end']-s['start'])*f,3) for s in d['scenes'] for f in (.05,.5,.95)))
   for i,t in enumerate(times):
    pg.evaluate('t=>window.render(t)',t);bg=p/f'tmp/frame-{i:03}.png';pg.screenshot(path=str(bg));compose(p,bg,p/f'previews/frame-{i:03}.jpg',c,t)
   # Check all displayed text variants, including the longest subtitles.
   for cap in d['captions']:pg.evaluate('t=>window.render(t)',(cap['start']+cap['end'])/2)
-  b.close()
  save(p/'qa/preview.json',{'times':times,'timeline_sha256':sha(p/'timeline.json'),'status':'rendered; visual inspection still required'})
  print(f'已生成{len(times)}张预览，所有字幕实际字宽检查通过',flush=True)
 
@@ -178,13 +178,8 @@ def render(p,c,name,draft=False):
  if draft and 'draft' not in name.lower() and '候选' not in name:raise ValueError('候选片文件名必须含draft或候选')
  src,d=build(p,c,draft,True);out=p/'out'/name
  if out.exists():raise ValueError('成片已存在，请用新的版本名，不覆盖认可版本')
- env=os.environ.copy();env['PYTHONUTF8']='1'
- cmd=[sys.executable,'-X','utf8',str(ROOT/'vendor/xilo-render.py'),str(p/'index.html'),str(p/'tmp/graphics.mp4'),'--size','1080x1440','--fps','30','--duration',str(d['duration']),'--crf','18']
- with (p/'qa/render.log').open('a',encoding='utf-8') as log:
-  pr=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',env=env)
-  for l in pr.stdout:print(l,end='',flush=True);log.write(l);log.flush()
-  if pr.wait():raise RuntimeError('图解渲染失败，未提交成片')
- tmp=p/'tmp/composed.mp4';compose(p,p/'tmp/graphics.mp4',tmp,c);tmp.replace(out)
+ graphics=renderer().render_cards(p,d['duration'],c['ffmpeg'])
+ tmp=p/'tmp/composed.mp4';compose(p,graphics,tmp,c);tmp.replace(out)
  save(p/'qa'/f'{name}.render.json',{'output_sha256':sha(out),'timeline_sha256':sha(p/'timeline.json'),'source_sha256':src['sha256'],'draft':draft,'version':VERSION,'template_sha256':sha(ROOT/'templates/card.html')})
  print('已导出：'+str(out),flush=True)
 

@@ -1,6 +1,8 @@
 # 来源与版本边界
 
-图解逐帧渲染器vendor/xilo-render.py来自xilo-opus-video，作者周行（Kianzzz），MIT；原许可保存在vendor/LICENSE-xilo。上游项目：https://github.com/Kianzzz/xilo-opus-video 。本技能是专用于真人口播卡片的衍生工作流，不是作者原包，也不声称作者提供了本模板。
+内部图解渲染模块scripts/card_renderer.py的浏览器启动和逐帧编码方式改编自xilo-opus-video，作者周行（Kianzzz），MIT；原许可保存在vendor/LICENSE-xilo。上游项目：https://github.com/Kianzzz/xilo-opus-video 。本技能是专用于真人口播卡片的衍生工作流，不是作者原包，也不声称作者提供了本模板。
+
+自1.1.0起不再分发独立通用渲染脚本vendor/xilo-render.py。仅保留制作固定真人卡片所需的内部渲染部分；上游版权及许可证不因改编而移除。专用化是功能范围调整，不是保密或防止源码改造的技术措施。已有公开版本及Git历史不会因此消失。
 
 视觉样式来自用户选定的3:4卡片方向；源码模板和流程在此项目独立整理。口播处理原则参考已有ASY真人口播包装流程。代码不包含用户视频、原始对话、个人配音配置或密钥。
 
