@@ -1,0 +1,41 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>ASY口播图解</title>
+<style>@font-face{font-family:CardChinese;src:url('__FONT_URL__')}html,body{margin:0;overflow:hidden;width:100%;height:100%;background:#dbe6fa}canvas{display:block;width:100%;height:100%}</style>
+<canvas width="1080" height="1440" id="canvas"></canvas><script>
+const DATA=__DATA_JSON__;
+const c=document.getElementById('canvas'),g=c.getContext('2d'),blue='#265fd0',ink='#203e69',gray='#6f8099';
+function box(x,y,w,h,r,fill,stroke){g.beginPath();g.roundRect(x,y,w,h,r);g.fillStyle=fill;g.fill();if(stroke){g.strokeStyle=stroke;g.lineWidth=2;g.stroke()}}
+function text(s,x,y,size=32,color=ink,weight=500,align='left',max=840){g.font=`${weight} ${size}px CardChinese,sans-serif`;if(g.measureText(s).width>max)throw Error('文字过宽，请重新分行：'+s);g.textAlign=align;g.textBaseline='middle';g.fillStyle=color;g.fillText(s,x,y)}
+function line(x,y,w,color='#dce4f2'){g.fillStyle=color;g.fillRect(x,y,w,2)}
+function dot(x,y,r,color){g.fillStyle=color;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill()}
+function enter(t,a,fn){const k=1-Math.pow(1-Math.max(0,Math.min(1,(t-a)/.3)),3);if(k<=0)return;g.save();g.globalAlpha*=k;g.translate(0,14*(1-k));fn();g.restore()}
+function arrow(x,y,w){g.lineWidth=3;g.strokeStyle='#9eb3d2';g.beginPath();g.moveTo(x,y);g.lineTo(x+w,y);g.lineTo(x+w-10,y-8);g.moveTo(x+w,y);g.lineTo(x+w-10,y+8);g.stroke()}
+function icon(i,x,y){g.save();g.translate(x,y);g.lineWidth=3;g.strokeStyle=blue;g.lineCap='round';g.beginPath();if(i===0){g.roundRect(-20,-18,40,32,6);g.moveTo(-10,14);g.lineTo(-16,24);g.lineTo(4,14);g.moveTo(-11,-6);g.lineTo(11,-6)}else if(i===1){g.roundRect(-18,-24,36,48,4);for(let z=-11;z<=13;z+=12){g.moveTo(-9,z);g.lineTo(9,z)}}else if(i===2){g.arc(0,0,23,0,Math.PI*2);g.moveTo(-10,0);g.lineTo(-2,8);g.lineTo(13,-9)}else{g.moveTo(-11,-21);g.lineTo(22,0);g.lineTo(-11,21);g.closePath()}g.stroke();g.restore()}
+function render(t){
+g.clearRect(0,0,1080,1440);const bg=g.createLinearGradient(0,0,1080,1440);bg.addColorStop(0,'#cbdcfa');bg.addColorStop(.45,'#fff0df');bg.addColorStop(1,'#cfc0ed');g.fillStyle=bg;g.fillRect(0,0,1080,1440);
+g.save();g.shadowColor='#43558822';g.shadowBlur=32;g.shadowOffsetY=10;box(60,50,960,1350,40,'#fff');g.restore();
+text(DATA.header,114,115,28,blue,650,'left',650);text('TALK & EXPLAIN',915,115,15,ink,450,'right',200);dot(951,114,12,'#f26772');line(112,155,856);
+box(108,190,864,710,28,'#f7f9fd','#e7ebf3');let idx=DATA.scenes.findIndex(s=>t>=s.start&&t<s.end);if(idx<0)idx=DATA.scenes.length-1;const s=DATA.scenes[idx];
+text(s.tag,152,236,23,blue,500,'left',650);text(`${String(idx+1).padStart(2,'0')} / ${String(DATA.scenes.length).padStart(2,'0')}`,925,236,18,gray,450,'right',150);
+enter(t,s.start,()=>s.title.forEach((v,i)=>text(v,540,330+i*79,s.title.length===1?61:58,i?blue:ink,700,'center',804)));
+const it=s.items;
+if(s.mode==='flow'||s.mode==='causal'){
+const n=it.length,w=744/n;it.forEach((a,i)=>{const x=168+w*(i+.5);if(i<n-1)enter(t,it[i+1].at,()=>arrow(x+45,633,w-90));enter(t,a.at,()=>{box(x-40,593,80,80,22,'#eaf2ff','#cbdaf1');icon(i,x,633);text(a.label,x,722,28,ink,600,'center',w-10);if(a.detail)text(a.detail,x,770,20,gray,450,'center',w-10)})});
+}else if(s.mode==='cards'){
+it.forEach((a,i)=>enter(t,a.at,()=>{let y=493+i*103;box(157,y,766,84,20,'#fff','#dce4f2');box(177,y+19,46,46,12,'#edf3ff');text(String(i+1).padStart(2,'0'),200,y+42,21,blue,600,'center',44);text(a.label,246,y+(a.detail?29:43),a.detail?30:34,ink,600,'left',645);if(a.detail)text(a.detail,246,y+61,21,gray,450,'left',645)}));
+}else if(s.mode==='compare'){
+it.forEach((a,i)=>enter(t,a.at,()=>{let x=158+i*397;box(x,501,370,250,24,i?'#edf3ff':'#fff','#dce4f2');text(a.label,x+185,571,34,i?blue:ink,650,'center',330);if(a.detail)text(a.detail,x+185,651,25,gray,450,'center',330)}));
+}else if(s.mode==='quote'){
+box(160,490,760,258,25,'#edf3ff');text('“',192,530,62,'#a8bfe7',600);it.forEach((a,i)=>enter(t,a.at,()=>{text(a.label,540,592+i*83,40,i?ink:blue,650,'center',680)}));
+}else{
+it.forEach((a,i)=>enter(t,a.at,()=>{let y=503+i*132;box(175,y,730,106,23,i?'#fff':'#edf3ff');text(a.label,540,y+53,40,i?ink:blue,650,'center',680)}));
+}
+text(s.note,540,846,26,gray,450,'center',804);
+g.save();g.shadowColor='#8191c42e';g.shadowBlur=18;dot(300,1110,188,'#c2c6e6');g.restore();dot(300,1110,180,'#edf2fa');
+text(s.side[0],552,1025,25,gray,450,'left',390);text(s.side[1],552,1083,32,blue,650,'left',390);
+text('真人原声 · 同步讲解',552,1164,22,gray,450,'left',390);
+const n=DATA.scenes.length;const shown=Math.min(n,12);for(let i=0;i<shown;i++)dot(565+i*27,1248,5,i===Math.min(idx,shown-1)?blue:i<idx?'#baccea':'#e8edf5');
+const a=DATA.captions.find(a=>t>=a.start&&t<a.end);if(a&&a.display!==false){g.font='650 42px CardChinese,sans-serif';let rows=[''];for(const ch of a.text){if(ch==='\n'){rows.push('');continue}if(g.measureText(rows.at(-1)+ch).width>836)rows.push(ch);else rows[rows.length-1]+=ch}if(rows.length>2||rows.some(r=>!r.trim()))throw Error('字幕超过两行或有空行：'+a.text);rows.forEach((r,i)=>text(r,540,1344+(i-(rows.length-1)/2)*54,42,ink,650,'center',836))}
+box(111,1380,858,4,2,'#e5eaf3');box(111,1380,858*Math.min(1,Math.max(0,t/DATA.duration)),4,2,blue);
+}
+window.render=render;window.ready=false;document.fonts.load('40px CardChinese').then(()=>document.fonts.ready).then(()=>{window.ready=true;render(0)});
+</script></html>

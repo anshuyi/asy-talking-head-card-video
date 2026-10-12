@@ -1,0 +1,8 @@
+{
+  "duration": 8,
+  "header": "学习方法 · 示例",
+  "crop": {"x": 0, "y": 0, "size": 720, "reviewed": false, "reason": "示例，不是实测取景"},
+  "transcript_review": {"status": "draft", "method": "结构示例，必须替换为真实转写", "unresolved": ["示例不能冒充识别结果"]},
+  "captions": [{"start": 0.5, "end": 3, "text": "先理解，再练习。", "source_span": [0.5,3]}],
+  "scenes": [{"start": 0, "end": 8, "mode": "flow", "tag": "方法 / 示例", "title": ["学习分两步", "先理解，再练习"], "purpose": "展示先后顺序", "source_span": [0,8], "items": [{"at": 0.5, "label": "先理解"},{"at": 2, "label": "再练习"}], "note": "示例数据，不是用户原话", "side": ["学习过程", "分步推进"]}]
+}

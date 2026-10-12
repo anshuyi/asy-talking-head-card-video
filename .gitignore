@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+runtime.json
+*.mp4
+*.m4a
+*.wav
+*.mp3
+projects/
+output/

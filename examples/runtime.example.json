@@ -1,0 +1,12 @@
+{
+  "python_executable": "填写已配置Python解释器的实际路径",
+  "ffmpeg": "ffmpeg",
+  "ffprobe": "ffprobe",
+  "python_paths": [],
+  "cuda_dirs": [],
+  "model": "large-v3-turbo",
+  "device": "cuda",
+  "compute_type": "float16",
+  "language": "zh",
+  "font_file": "填写本机真实中文字体文件路径"
+}
